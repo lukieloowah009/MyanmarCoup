@@ -21,17 +21,28 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     r2 = str(re.findall(r"([1-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1-9][0-9][0-9][0-9])\sarbitrarily detained", soupText))
 
     #Formatting
-    r2 = r2.replace('[', '')
-    r2 = r2.replace(']', '')
-    r2 = r2.replace('\'', '')
-    r2 = r2.replace('\'', '')
+    r2 = formatText(r2)
+
+    #Uing Regex to find last edited date
+    r3 = re.search(r"This page was last edited on \d\d? (March|April) \d\d\d\d", soupText).group(0)
+    r4 = re.search(r"\d\d? (March|April) \d\d\d\d", r3).group(0)
 
     #Create and return json object
     result = {
-        'Arrests': int(r2)
+        'Arrests': int(r2),
+        'lastUpdated': r4
     }
 
     return func.HttpResponse(
         json.dumps(result),
         mimetype="application/json",
     )
+
+
+def formatText(input):
+    input = input.replace('[', '')
+    input = input.replace(']', '')
+    input = input.replace('\'', '')
+    input = input.replace('\'', '')
+
+    return input

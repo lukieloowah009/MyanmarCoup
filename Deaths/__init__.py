@@ -21,18 +21,30 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     r2 = str(re.findall(r"[0-9][0-9]", r1[0]))
 
     #Formatting
-    r2 = r2.replace('[', '')
-    r2 = r2.replace(']', '')
-    r2 = r2.replace('\'', '')
-    r2 = r2.replace('\'', '')
+    r2 = formatText(r2)
+
+    #Uing Regex to find last edited date
+    r3 = re.search(r"This page was last edited on \d\d? (March|April) \d\d\d\d", soupText).group(0)
+    r4 = re.search(r"\d\d? (March|April) \d\d\d\d", r3).group(0)
 
     #Create and return json object
     result = {
-        'Deaths': int(r2)
+        'Deaths': int(r2),
+        'lastUpdated': r4
     }
 
     return func.HttpResponse(
         json.dumps(result),
         mimetype="application/json",
     )
+
+
+def formatText(input):
+    input = input.replace('[', '')
+    input = input.replace(']', '')
+    input = input.replace('\'', '')
+    input = input.replace('\'', '')
+
+    return input
+
 
