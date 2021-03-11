@@ -1,24 +1,37 @@
 import logging
-
+import requests
+from bs4 import BeautifulSoup
 import azure.functions as func
+import re
+import json
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
-    name = req.params.get('name')
-    if not name:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            name = req_body.get('name')
+    #wikipedia URL and making a request
+    URL = "https://en.wikipedia.org/wiki/2021_Myanmar_coup_d%27%C3%A9tat"
+    page = requests.get(URL)
 
-    if name:
-        return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
-    else:
-        return func.HttpResponse(
-             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-             status_code=200
-        )
+    #Web Scraping the wikipedia page
+    soup = BeautifulSoup(page.content, 'html.parser')
+    soupText = str(soup.text)
+
+    #Using Regex to find number of arrests
+    r2 = str(re.findall(r"([1-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1-9][0-9][0-9][0-9])\sarbitrarily detained", soupText))
+
+    #Formatting
+    r2 = r2.replace('[', '')
+    r2 = r2.replace(']', '')
+    r2 = r2.replace('\'', '')
+    r2 = r2.replace('\'', '')
+
+    #Create and return json object
+    result = {
+        'Arrests': int(r2)
+    }
+
+    return func.HttpResponse(
+        json.dumps(result),
+        mimetype="application/json",
+    )
